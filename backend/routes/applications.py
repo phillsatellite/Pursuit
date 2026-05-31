@@ -1,34 +1,19 @@
-from datetime import datetime, date
+from datetime import date
 
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from extensions import db
 from models import Application, Company, APPLICATION_STATUSES
-from .helpers import get_pagination_args, paginated_response, json_error
+from .helpers import (
+    get_pagination_args,
+    paginated_response,
+    json_error,
+    parse_date,
+    parse_datetime,
+)
 
 bp = Blueprint("applications", __name__, url_prefix="/api/applications")
-
-
-def _parse_date(value, field):
-    """Parses an ISO date string. Returns (parsed, error_response). One will be None."""
-    if value is None or value == "":
-        return None, None
-    try:
-        return date.fromisoformat(value), None
-    except ValueError:
-        return None, json_error(f"{field} must be YYYY-MM-DD")
-
-
-def _parse_datetime(value, field):
-    if value is None or value == "":
-        return None, None
-    try:
-        # accept either "...Z" or naive iso strings
-        cleaned = value.replace("Z", "+00:00") if value.endswith("Z") else value
-        return datetime.fromisoformat(cleaned), None
-    except ValueError:
-        return None, json_error(f"{field} must be an ISO datetime")
 
 
 def _get_owned_or_404(application_id):
@@ -91,10 +76,10 @@ def create_application():
     if status not in APPLICATION_STATUSES:
         return json_error(f"status must be one of {list(APPLICATION_STATUSES)}")
 
-    applied_date, err = _parse_date(data.get("applied_date"), "applied_date")
+    applied_date, err = parse_date(data.get("applied_date"), "applied_date")
     if err:
         return err
-    first_response_at, err = _parse_datetime(data.get("first_response_at"), "first_response_at")
+    first_response_at, err = parse_datetime(data.get("first_response_at"), "first_response_at")
     if err:
         return err
 
@@ -151,14 +136,14 @@ def update_application(application_id):
         app_row.status = data["status"]
 
     if "applied_date" in data:
-        parsed, err = _parse_date(data["applied_date"], "applied_date")
+        parsed, err = parse_date(data["applied_date"], "applied_date")
         if err:
             return err
         if parsed is not None:
             app_row.applied_date = parsed
 
     if "first_response_at" in data:
-        parsed, err = _parse_datetime(data["first_response_at"], "first_response_at")
+        parsed, err = parse_datetime(data["first_response_at"], "first_response_at")
         if err:
             return err
         app_row.first_response_at = parsed

@@ -5,6 +5,7 @@ import {
   companies as companiesApi,
   APPLICATION_STATUSES,
 } from "../api";
+import { toLocalInputDate, toLocalInputDateTime } from "../utils/dates";
 
 const EMPTY = {
   role_title: "",
@@ -17,20 +18,6 @@ const EMPTY = {
   notes: "",
   first_response_at: "",
 };
-
-function toLocalInputDate(iso) {
-  if (!iso) return "";
-  return iso.slice(0, 10);
-}
-
-function toLocalInputDateTime(iso) {
-  if (!iso) return "";
-  // strip seconds + tz for <input type="datetime-local">
-  const d = new Date(iso);
-  if (isNaN(d)) return "";
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 export default function ApplicationForm() {
   const { id } = useParams();

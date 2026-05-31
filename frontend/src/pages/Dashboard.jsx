@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { stats as statsApi } from "../api";
 import StatusBadge from "../components/StatusBadge";
+import { formatDate, formatDateTime } from "../utils/dates";
 
 function StatCard({ label, value, hint }) {
   return (
@@ -11,17 +12,6 @@ function StatCard({ label, value, hint }) {
       {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
     </div>
   );
-}
-
-// tiny formatters so null/empty dates render as a dash instead of "Invalid Date"
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString();
-}
-
-function formatDateTime(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleString();
 }
 
 export default function Dashboard() {

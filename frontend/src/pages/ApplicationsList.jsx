@@ -3,11 +3,7 @@ import { Link } from "react-router-dom";
 import { applications as appsApi, APPLICATION_STATUSES } from "../api";
 import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
-
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString();
-}
+import { formatDate } from "../utils/dates";
 
 export default function ApplicationsList() {
   const [data, setData] = useState(null);

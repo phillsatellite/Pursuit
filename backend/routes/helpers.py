@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 from flask import request, jsonify
 
 # safe default + ceiling so a curious user can't request 100k rows at once
@@ -37,3 +39,28 @@ def json_error(message, status=400, **extra):
     payload = {"error": message}
     payload.update(extra)
     return jsonify(payload), status
+
+
+# date parsers shared by the application / contact / interview routes. each
+# returns (parsed_value, error_response) with exactly one side set, so callers
+# can bail out early when the error_response isn't None.
+def parse_date(value, field):
+    """Parses an ISO date string (YYYY-MM-DD). Returns (parsed, error_response)."""
+    if value is None or value == "":
+        return None, None
+    try:
+        return date.fromisoformat(value), None
+    except ValueError:
+        return None, json_error(f"{field} must be YYYY-MM-DD")
+
+
+def parse_datetime(value, field):
+    """Parses an ISO datetime, tolerating a trailing 'Z'. Returns (parsed, error_response)."""
+    if value is None or value == "":
+        return None, None
+    try:
+        # accept either "...Z" or naive iso strings
+        cleaned = value.replace("Z", "+00:00") if value.endswith("Z") else value
+        return datetime.fromisoformat(cleaned), None
+    except ValueError:
+        return None, json_error(f"{field} must be an ISO datetime")

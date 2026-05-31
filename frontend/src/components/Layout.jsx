@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../auth/useAuth";
 
 // one list drives both the desktop nav bar and the mobile row below, so the two
 // can't drift apart. `end` on Dashboard stops "/" from matching as active on

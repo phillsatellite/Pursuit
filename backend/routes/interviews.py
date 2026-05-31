@@ -1,25 +1,13 @@
-from datetime import datetime
-
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from extensions import db
 from models import Application, Interview
-from .helpers import json_error
+from .helpers import json_error, parse_datetime
 
 # Mounted under /api so we can host both
 # /api/applications/<id>/interviews and /api/interviews/<id> in one blueprint.
 bp = Blueprint("interviews", __name__, url_prefix="/api")
-
-
-def _parse_datetime(value, field):
-    if value is None or value == "":
-        return None, None
-    try:
-        cleaned = value.replace("Z", "+00:00") if value.endswith("Z") else value
-        return datetime.fromisoformat(cleaned), None
-    except ValueError:
-        return None, json_error(f"{field} must be an ISO datetime")
 
 
 def _owned_application(application_id):
@@ -60,7 +48,7 @@ def create_interview(application_id):
     if not round_type:
         return json_error("round_type is required")
 
-    scheduled_at, err = _parse_datetime(data.get("scheduled_at"), "scheduled_at")
+    scheduled_at, err = parse_datetime(data.get("scheduled_at"), "scheduled_at")
     if err:
         return err
 
@@ -93,7 +81,7 @@ def update_interview(interview_id):
         interview.round_type = new_type
 
     if "scheduled_at" in data:
-        parsed, err = _parse_datetime(data["scheduled_at"], "scheduled_at")
+        parsed, err = parse_datetime(data["scheduled_at"], "scheduled_at")
         if err:
             return err
         interview.scheduled_at = parsed

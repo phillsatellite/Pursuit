@@ -1,22 +1,16 @@
-from datetime import date
-
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from extensions import db
 from models import Contact, Company
-from .helpers import get_pagination_args, paginated_response, json_error
+from .helpers import (
+    get_pagination_args,
+    paginated_response,
+    json_error,
+    parse_date,
+)
 
 bp = Blueprint("contacts", __name__, url_prefix="/api/contacts")
-
-
-def _parse_date(value, field):
-    if value is None or value == "":
-        return None, None
-    try:
-        return date.fromisoformat(value), None
-    except ValueError:
-        return None, json_error(f"{field} must be YYYY-MM-DD")
 
 
 def _company_belongs_to_user(company_id):
@@ -66,7 +60,7 @@ def create_contact():
     if company_id and not _company_belongs_to_user(company_id):
         return json_error("company_id is invalid")
 
-    last_contacted, err = _parse_date(data.get("last_contacted"), "last_contacted")
+    last_contacted, err = parse_date(data.get("last_contacted"), "last_contacted")
     if err:
         return err
 
@@ -115,7 +109,7 @@ def update_contact(contact_id):
         contact.company_id = new_company_id or None
 
     if "last_contacted" in data:
-        parsed, err = _parse_date(data["last_contacted"], "last_contacted")
+        parsed, err = parse_date(data["last_contacted"], "last_contacted")
         if err:
             return err
         contact.last_contacted = parsed
