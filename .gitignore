@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Production build output
+dist/
+
+# Local tooling / editor config
+.claude/
+.vscode/
+.idea/
+
+# Environment files (the real ones — .env.example stays tracked)
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
