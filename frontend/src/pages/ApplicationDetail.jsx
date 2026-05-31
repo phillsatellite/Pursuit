@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { applications as appsApi, interviews as interviewsApi } from "../api";
 import StatusBadge from "../components/StatusBadge";
 import Modal from "../components/Modal";
+import { formatDate, formatDateTime, toLocalInputDateTime } from "../utils/dates";
 
 const EMPTY_INTERVIEW = {
   round_type: "",
@@ -11,24 +12,6 @@ const EMPTY_INTERVIEW = {
   outcome: "pending",
   notes: "",
 };
-
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString();
-}
-function formatDateTime(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleString();
-}
-// <input type="datetime-local"> expects "YYYY-MM-DDTHH:mm" in *local* time.
-// build it by hand — toISOString() would convert to UTC and shift the clock.
-function toLocalInputDateTime(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (isNaN(d)) return "";
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 export default function ApplicationDetail() {
   const { id } = useParams();

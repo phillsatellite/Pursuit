@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { contacts as contactsApi, companies as companiesApi } from "../api";
 import Pagination from "../components/Pagination";
 import Modal from "../components/Modal";
+import { formatDate } from "../utils/dates";
 
 const EMPTY = {
   name: "",
@@ -11,11 +12,6 @@ const EMPTY = {
   last_contacted: "",
   notes: "",
 };
-
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString();
-}
 
 export default function ContactsList() {
   const [data, setData] = useState(null);
