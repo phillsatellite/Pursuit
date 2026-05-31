@@ -110,7 +110,7 @@ class Application(db.Model):
     # where you found the job (LinkedIn, referral, company site, etc.)
     source = db.Column(db.String(120))
     salary_range = db.Column(db.String(120))
-    # raw JD text — kept so the AI features can re-run later if needed
+    # full job description, pasted in — handy to re-read when prepping for interviews
     jd_text = db.Column(db.Text)
     notes = db.Column(db.Text)
     # only set once the company first replies, used for days-to-response stat
