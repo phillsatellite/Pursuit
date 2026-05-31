@@ -14,8 +14,8 @@ and hiring managers you've talked to along the way.
 - Gunicorn for the production WSGI server
 
 **Frontend**
-- React 18 + Vite
-- React Router v6
+- React 19 + Vite
+- React Router v7
 - Tailwind CSS
 
 ## Core functionality
@@ -59,7 +59,7 @@ Pursuit/
 │       ├── api.js           fetch wrapper + per-resource clients
 │       ├── auth/            AuthContext + ProtectedRoute
 │       ├── components/      Layout, Pagination, Modal, StatusBadge
-│       ├── pages/           Dashboard, Login, Signup, Applications*, CompaniesList, ContactsList
+│       ├── pages/           Dashboard, Login, Signup, Welcome, Applications*, CompaniesList, ContactsList
 │       └── App.jsx          router
 └── README.md
 ```
@@ -69,14 +69,14 @@ Pursuit/
 ### Prerequisites
 
 - Python 3.9+
-- Node 18+
+- Node 20.19+ (Vite 8 dropped support for Node 18)
 - Optionally Postgres 14+ (SQLite is the default for local dev)
 
 ### 1. Backend
 
 ```bash
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
@@ -91,7 +91,12 @@ flask db upgrade        # apply migrations
 python app.py           # serves on http://127.0.0.1:5000
 ```
 
-The expected `.env` values:
+> **macOS note:** the AirPlay Receiver holds port 5000 on recent macOS, so
+> `python app.py` may fail with "Address already in use". Turn it off under
+> **System Settings → General → AirDrop & Handoff → AirPlay Receiver** — the
+> Vite proxy expects the backend on 5000, so freeing that port is simplest.
+
+A full `.env` (this is what `.env.example` ships):
 
 ```
 FLASK_APP=app.py
@@ -100,6 +105,13 @@ DATABASE_URL=sqlite:///tracker.db
 SECRET_KEY=replace-with-a-long-random-string
 CORS_ORIGINS=http://localhost:5173
 ```
+
+None of these are strictly required for a local run: `app.py` falls back to
+SQLite, a throwaway dev `SECRET_KEY`, and `http://localhost:5173` for CORS when
+they're unset, so the app boots without a `.env` at all. Create one when you
+want a real `SECRET_KEY` or a non-default database. `FLASK_APP` and
+`FLASK_DEBUG` are read only by the `flask` CLI (e.g. `flask db upgrade`), not by
+`python app.py`.
 
 ### 2. Frontend
 
@@ -115,15 +127,17 @@ The Vite dev server proxies `/api/*` to `http://127.0.0.1:5000`, so the
 browser sees a single origin and the session cookie works without any CORS
 gymnastics.
 
-Open `http://localhost:5173`. You'll be redirected to `/signup`. Create an
-account, then start adding companies and applications.
+Open `http://localhost:5173`. If you're not logged in you'll be redirected to
+`/login`; use the **Sign up** link there to create an account, then start
+adding companies and applications.
 
 ## How to test the application
 
 ### Manual end-to-end
 
 1. **Signup.** Visit `/signup`, create an account (password ≥ 8 chars).
-   You should land on the empty dashboard.
+   You'll land on the one-time welcome page; click **Get started** to reach
+   the (empty) dashboard.
 2. **Add a company.** Go to **Companies → + New company**.
 3. **Add an application.** Go to **Applications → + New application**,
    pick the company, set status `Applied`.
