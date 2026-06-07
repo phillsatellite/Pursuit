@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   applications as appsApi,
   companies as companiesApi,
+  ai as aiApi,
   APPLICATION_STATUSES,
 } from "../api";
 import { toLocalInputDate, toLocalInputDateTime } from "../utils/dates";
@@ -29,6 +30,7 @@ export default function ApplicationForm() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
+  const [parsing, setParsing] = useState(false);
 
   useEffect(() => {
     // fetch a large page of companies so the dropdown has them all. for a real
@@ -60,6 +62,33 @@ export default function ApplicationForm() {
 
   function update(field) {
     return (e) => setForm({ ...form, [field]: e.target.value });
+  }
+
+  async function autofillFromDescription() {
+    const text = form.jd_text.trim();
+    if (!text) {
+      setError("Paste a job description first.");
+      return;
+    }
+    setParsing(true);
+    setError(null);
+    try {
+      const { fields } = await aiApi.parseJob(text);
+      // only overwrite a field when the model actually found something, so we
+      // never blank out values the user already typed.
+      setForm((f) => ({
+        ...f,
+        role_title: fields.role_title || f.role_title,
+        company_name: fields.company_name || f.company_name,
+        salary_range: fields.salary_range || f.salary_range,
+        source: fields.source || f.source,
+        notes: fields.notes || f.notes,
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setParsing(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -216,9 +245,24 @@ export default function ApplicationForm() {
             id="jd_text"
             rows={4}
             className="input"
+            placeholder="Paste the full job posting here, then hit Autofill with AI to fill in the fields above."
             value={form.jd_text}
             onChange={update("jd_text")}
           />
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="btn-primary inline-flex items-center gap-1.5"
+              onClick={autofillFromDescription}
+              disabled={parsing}
+            >
+              <span aria-hidden="true">✨</span>
+              {parsing ? "Reading posting…" : "Autofill with AI"}
+            </button>
+            <span className="text-xs text-slate-400">
+              Pulls the title, company, salary, source and a summary from the posting — review before saving.
+            </span>
+          </div>
         </div>
 
         <div>

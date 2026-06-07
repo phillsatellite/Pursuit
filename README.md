@@ -12,6 +12,7 @@ and hiring managers you've talked to along the way.
 - Flask-Login for session-based auth, Flask-Bcrypt for password hashing
 - PostgreSQL in production, SQLite for local development (selectable via `DATABASE_URL`)
 - Gunicorn for the production WSGI server
+- openai SDK for the AI autofill endpoint (OpenAI-compatible — also works with Groq's free tier or a local Ollama model)
 
 **Frontend**
 - React 19 + Vite
@@ -42,6 +43,11 @@ and hiring managers you've talked to along the way.
   `pages`, `has_next`, `has_prev`.
 - **Dashboard.** Pipeline counts by status, upcoming interviews in the next
   14 days, average days to first response, and a recent-activity list.
+- **AI autofill.** On the new-application form, paste a job description and the
+  app extracts the role title, company, salary range, source, and a short summary
+  to pre-fill the form — you review before saving. Works with any OpenAI-compatible
+  API: OpenAI by default, or Groq's free tier / a local Ollama model via env vars.
+  With no API key set, the button shows a friendly "not configured" message.
 
 ## Project layout
 
@@ -51,14 +57,15 @@ Pursuit/
 │   ├── app.py               app factory + login manager + CORS
 │   ├── extensions.py        SQLAlchemy, Migrate, Bcrypt, LoginManager
 │   ├── models.py            User, Company, Application, Interview, Contact
-│   ├── routes/              auth, companies, applications, interviews, contacts, stats
+│   ├── routes/              auth, companies, applications, interviews, contacts, stats, ai
 │   ├── migrations/          Alembic migrations
 │   └── requirements.txt
 ├── frontend/                Vite + React app
 │   └── src/
 │       ├── api.js           fetch wrapper + per-resource clients
-│       ├── auth/            AuthContext + ProtectedRoute
+│       ├── auth/            AuthProvider, useAuth, context, ProtectedRoute
 │       ├── components/      Layout, Pagination, Modal, StatusBadge
+│       ├── utils/           dates.js (shared date formatters)
 │       ├── pages/           Dashboard, Login, Signup, Welcome, Applications*, CompaniesList, ContactsList
 │       └── App.jsx          router
 └── README.md
@@ -104,6 +111,15 @@ FLASK_DEBUG=1
 DATABASE_URL=sqlite:///tracker.db
 SECRET_KEY=replace-with-a-long-random-string
 CORS_ORIGINS=http://localhost:5173
+
+# Optional — enables AI autofill on the new-application form.
+# Works with any OpenAI-compatible API; leave OPENAI_API_KEY blank to disable.
+#   OpenAI (default): set OPENAI_API_KEY, leave OPENAI_BASE_URL blank, AI_MODEL=gpt-4o-mini
+#   Groq (free tier): OPENAI_BASE_URL=https://api.groq.com/openai/v1  AI_MODEL=llama-3.3-70b-versatile
+#   Local (Ollama):   OPENAI_BASE_URL=http://localhost:11434/v1       AI_MODEL=llama3.1
+OPENAI_API_KEY=
+OPENAI_BASE_URL=
+AI_MODEL=gpt-4o-mini
 ```
 
 None of these are strictly required for a local run: `app.py` falls back to
@@ -111,7 +127,10 @@ SQLite, a throwaway dev `SECRET_KEY`, and `http://localhost:5173` for CORS when
 they're unset, so the app boots without a `.env` at all. Create one when you
 want a real `SECRET_KEY` or a non-default database. `FLASK_APP` and
 `FLASK_DEBUG` are read only by the `flask` CLI (e.g. `flask db upgrade`), not by
-`python app.py`.
+`python app.py`. The AI autofill feature stays off until you set `OPENAI_API_KEY`;
+without it, the **Autofill with AI** button returns a friendly "not configured"
+message instead of failing. Restart the backend after editing `.env` so a new key
+is picked up.
 
 ### 2. Frontend
 
@@ -155,6 +174,10 @@ adding companies and applications.
 9. **Delete.** Delete a company — confirm its applications and contacts
    are also removed.
 10. **Logout / Login.** Log out, then log back in with the same credentials.
+
+> **AI autofill (optional):** with `OPENAI_API_KEY` set in `.env` (and the backend
+> restarted), the New application page shows an **Autofill with AI** button — paste a
+> job description and the role, company, salary, source, and notes fields populate.
 
 ### Auth + ownership checks (curl)
 
@@ -217,6 +240,7 @@ All routes are JSON. All routes except `/api/health`, `/api/auth/signup`,
 | PATCH   | `/api/contacts/:id`                             |                                               |
 | DELETE  | `/api/contacts/:id`                             |                                               |
 | GET     | `/api/stats`                                    | dashboard data                                |
+| POST    | `/api/ai/parse-job`                             | `{text}` → extracted application fields (AI)   |
 
 ## Deployment
 

@@ -91,6 +91,11 @@ export const stats = {
   dashboard: () => api.get("/api/stats"),
 };
 
+export const ai = {
+  // send pasted job-posting text, get back extracted form fields
+  parseJob: (text) => api.post("/api/ai/parse-job", { text }),
+};
+
 export const APPLICATION_STATUSES = [
   "Applied",
   "Contacted",
