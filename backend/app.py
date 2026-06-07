@@ -64,6 +64,7 @@ def create_app():
     from routes.interviews import bp as interviews_bp
     from routes.contacts import bp as contacts_bp
     from routes.stats import bp as stats_bp
+    from routes.ai import bp as ai_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(companies_bp)
@@ -71,6 +72,7 @@ def create_app():
     app.register_blueprint(interviews_bp)
     app.register_blueprint(contacts_bp)
     app.register_blueprint(stats_bp)
+    app.register_blueprint(ai_bp)
 
     @app.get("/api/health")
     def health():
