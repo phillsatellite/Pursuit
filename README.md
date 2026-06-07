@@ -152,33 +152,6 @@ adding companies and applications.
 
 ## How to test the application
 
-### Manual end-to-end
-
-1. **Signup.** Visit `/signup`, create an account (password ≥ 8 chars).
-   You'll land on the one-time welcome page; click **Get started** to reach
-   the (empty) dashboard.
-2. **Add a company.** Go to **Companies → + New company**.
-3. **Add an application.** Go to **Applications → + New application**,
-   pick the company, set status `Applied`.
-4. **Add an interview.** Open the application's detail page, click
-   **+ Add interview**, fill in round type and scheduled time. It should
-   now appear in the dashboard's "Upcoming interviews" if scheduled in the
-   next 14 days.
-5. **Add a contact.** Go to **Contacts → + New contact**, link to the
-   company.
-6. **Pagination.** Add ≥ 11 applications and confirm the **Next/Previous**
-   buttons work.
-7. **Filters.** Change the status dropdown on the Applications list and
-   confirm the table filters correctly.
-8. **Edit.** Open any record and confirm changes save.
-9. **Delete.** Delete a company — confirm its applications and contacts
-   are also removed.
-10. **Logout / Login.** Log out, then log back in with the same credentials.
-
-> **AI autofill (optional):** with `OPENAI_API_KEY` set in `.env` (and the backend
-> restarted), the New application page shows an **Autofill with AI** button — paste a
-> job description and the role, company, salary, source, and notes fields populate.
-
 ### Auth + ownership checks (curl)
 
 The backend can be exercised directly. Cookie jar carries the session:
