@@ -98,11 +98,6 @@ flask db upgrade        # apply migrations
 python app.py           # serves on http://127.0.0.1:5000
 ```
 
-> **macOS note:** the AirPlay Receiver holds port 5000 on recent macOS, so
-> `python app.py` may fail with "Address already in use". Turn it off under
-> **System Settings → General → AirDrop & Handoff → AirPlay Receiver** — the
-> Vite proxy expects the backend on 5000, so freeing that port is simplest.
-
 A full `.env` (this is what `.env.example` ships):
 
 ```
@@ -122,15 +117,14 @@ OPENAI_BASE_URL=
 AI_MODEL=gpt-4o-mini
 ```
 
-None of these are strictly required for a local run: `app.py` falls back to
-SQLite, a throwaway dev `SECRET_KEY`, and `http://localhost:5173` for CORS when
-they're unset, so the app boots without a `.env` at all. Create one when you
-want a real `SECRET_KEY` or a non-default database. `FLASK_APP` and
-`FLASK_DEBUG` are read only by the `flask` CLI (e.g. `flask db upgrade`), not by
-`python app.py`. The AI autofill feature stays off until you set `OPENAI_API_KEY`;
-without it, the **Autofill with AI** button returns a friendly "not configured"
-message instead of failing. Restart the backend after editing `.env` so a new key
-is picked up.
+Enabling AI autofill
+You should have an OpenAI API key ready. 
+
+- Open backend/.env (the file you copied from .env.example above).
+- Find the OPENAI_API_KEY= line and paste your key right after the = — no spaces, no quotes:
+- OPENAI_API_KEY=sk-proj-...paste-your-key-here...
+- Save the file.
+- Restart the backend (stop python app.py with Ctrl+C, then start it again). The key is only read at startup, so a running server won't see it.
 
 ### 2. Frontend
 
